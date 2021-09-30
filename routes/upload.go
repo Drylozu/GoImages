@@ -10,16 +10,10 @@ import (
 
 func UploadFile(files *database.Files) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		form, err := c.MultipartForm()
+		file, err := c.FormFile("file")
 		if err != nil {
 			return c.Redirect("https://zzz.drylo.xyz/")
 		}
-
-		if len(form.File["image"]) < 1 {
-			return c.Redirect("https://zzz.drylo.xyz/")
-		}
-
-		file := form.File["image"][0]
 
 		contents, err := file.Open()
 		if err != nil {
