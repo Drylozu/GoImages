@@ -1,0 +1,48 @@
+package main
+
+import (
+	"flag"
+	"images/database"
+	"images/routes"
+	"log"
+	"math/rand"
+	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+)
+
+var (
+	port    = flag.String("port", "127.0.0.1:3000", "Specifies the port to listen")
+	prefork = flag.Bool("prefork", false, "Specifies if prefork will be enabled")
+)
+
+func init() {
+	rand.Seed(time.Now().Unix())
+}
+
+func main() {
+	flag.Parse()
+
+	app := fiber.New(fiber.Config{
+		Prefork:      *prefork,
+		UnescapePath: true,
+	})
+
+	db := database.New()
+	files := database.GetFiles(db)
+
+	app.Use(logger.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+	}))
+
+	routes.Register(files, app.Group("/"))
+
+	app.Use(func(c *fiber.Ctx) error {
+		return c.Redirect("https://zzz.drylo.xyz/")
+	})
+
+	log.Fatal(app.Listen(*port))
+}
