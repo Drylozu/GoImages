@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/base64"
+	"fmt"
 	"images/database"
 	"io/ioutil"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	editor "images/tools"
 
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Queries struct {
@@ -18,9 +20,15 @@ type Queries struct {
 
 func GetImage(files *database.Files) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		file := files.Get(c.Params("name"))
+		id, err := primitive.ObjectIDFromHex(c.Params("id"))
+		if err != nil {
+			fmt.Printf("err: %#v\n", err)
+			return c.Redirect("/")
+		}
+
+		file := files.Get(id)
 		if file == nil {
-			return c.Redirect("https://zzz.drylo.xyz/")
+			return c.Redirect("/")
 		}
 
 		c.SendStatus(200)
@@ -37,7 +45,7 @@ func GetImage(files *database.Files) fiber.Handler {
 		if file.Type == "image/png" && (q.Width > 0 || q.Height > 0) {
 			img := editor.ProcessImage(decoder, q.Width, q.Height)
 			if img == nil {
-				return c.Redirect("https://zzz.drylo.xyz/")
+				return c.Redirect("/")
 			}
 
 			return c.Send(img)
@@ -45,7 +53,7 @@ func GetImage(files *database.Files) fiber.Handler {
 
 		bytes, err := ioutil.ReadAll(decoder)
 		if err != nil {
-			return c.Redirect("https://zzz.drylo.xyz/")
+			return c.Redirect("/")
 		}
 
 		return c.Send(bytes)

@@ -8,6 +8,10 @@ import (
 )
 
 func Register(files *database.Files, router fiber.Router) {
-	router.Post("/lets_upload_a_new_file", middlewares.CheckAuth, UploadFile(files))
-	router.Get("/:name", GetImage(files))
+	router.Get("/", func(c *fiber.Ctx) error {
+		return c.Send([]byte("hi"))
+	})
+
+	router.Post("/upload", middlewares.CheckAuth, UploadFile(files))
+	router.Get("/:id", GetImage(files))
 }

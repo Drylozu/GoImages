@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/base64"
+	"fmt"
 	"images/database"
 	"io/ioutil"
 
@@ -12,25 +13,27 @@ func UploadFile(files *database.Files) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		file, err := c.FormFile("file")
 		if err != nil {
-			return c.Redirect("https://zzz.drylo.xyz/")
+			fmt.Printf("err: %#v\n", err)
+			return c.Redirect("/")
 		}
 
 		contents, err := file.Open()
 		if err != nil {
-			return c.Redirect("https://zzz.drylo.xyz/")
+			fmt.Printf("err: %#v\n", err)
+			return c.Redirect("/")
 		}
 
 		defer contents.Close()
 
 		bytes, err := ioutil.ReadAll(contents)
 		if err != nil {
-			return c.Redirect("https://zzz.drylo.xyz/")
+			fmt.Printf("err: %#v\n", err)
+			return c.Redirect("/")
 		}
 
 		f := files.Upload(base64.StdEncoding.EncodeToString(bytes), file.Header.Get("Content-Type"))
 		return c.JSON(fiber.Map{
-			"id":   f.ID,
-			"name": f.Name,
+			"id": f.ID,
 		})
 	}
 }

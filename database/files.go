@@ -11,7 +11,6 @@ import (
 
 type File struct {
 	ID        primitive.ObjectID `bson:"_id"`
-	Name      string             `bson:"name"`
 	Type      string             `bson:"type"`
 	Data      string             `bson:"data"`
 	CreatedAt time.Time          `bson:"createdAt"`
@@ -30,24 +29,25 @@ func GetFiles(db *mongo.Database) *Files {
 func (f *Files) Upload(b64, mime string) *File {
 	file := &File{
 		ID:        primitive.NewObjectID(),
-		Name:      GenerateName(),
 		Type:      mime,
 		Data:      b64,
 		CreatedAt: time.Now(),
 	}
+
 	_, err := f.collection.InsertOne(Ctx, file)
 	if err != nil {
 		fmt.Printf("err: %#v\n", err)
 		return nil
 	}
+
 	return file
 }
 
-func (f *Files) Get(name string) *File {
+func (f *Files) Get(id primitive.ObjectID) *File {
 	doc := &File{}
 	err := f.collection.FindOne(Ctx, bson.D{
 		bson.E{
-			Key: "name", Value: name,
+			Key: "id", Value: id,
 		},
 	}).Decode(&doc)
 

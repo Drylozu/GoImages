@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"images/database"
 	"images/routes"
 	"log"
@@ -15,7 +16,7 @@ import (
 )
 
 var (
-	port    = flag.String("port", "127.0.0.1:3000", "Specifies the port to listen")
+	host    = flag.String("host", "127.0.0.1:3000", "Specifies the interface to listen")
 	prefork = flag.Bool("prefork", false, "Specifies if prefork will be enabled")
 )
 
@@ -26,6 +27,7 @@ func init() {
 func main() {
 	err := godotenv.Load()
 	if err != nil {
+		fmt.Println(err)
 		log.Fatal("Couldn't load .env file")
 	}
 
@@ -47,8 +49,8 @@ func main() {
 	routes.Register(files, app.Group("/"))
 
 	app.Use(func(c *fiber.Ctx) error {
-		return c.Redirect("https://zzz.drylo.xyz/")
+		return c.Redirect("/")
 	})
 
-	log.Fatal(app.Listen(*port))
+	log.Fatal(app.Listen(*host))
 }
